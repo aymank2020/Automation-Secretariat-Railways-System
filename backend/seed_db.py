@@ -4,6 +4,20 @@ Seed the database with initial data
 """
 import sys
 from pathlib import Path
+import bcrypt
+
+# كلمة السر التي ستخزن في قاعدة البيانات
+password = "طويلة جدًا جدًا جدًا حتى تتجاوز الحد المسموح به في bcrypt"
+
+# تقليص كلمة السر إلى 72 بايت
+password = password[:72]  # تقليص الكلمة لتكون 72 بايت كحد أقصى
+
+# الآن يمكنك تمرير الكلمة إلى bcrypt بعد التأكد من طولها
+hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+# الآن قد يتم تخزين hashed_password في قاعدة البيانات
+
+
 
 # Add app to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
