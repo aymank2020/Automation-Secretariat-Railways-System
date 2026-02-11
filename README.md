@@ -39,7 +39,7 @@
 
 1. **استنساخ المشروع**
 ```bash
-git clone https://github.com/aymanbayoumi080-oss/Automation-Secretariat-Railways-System.g.git
+git clone https://github.com/aymank2020/Automation-Secretariat-Railways-System.git
 cd Automation-Secretariat-Railways-System
 ```
 
@@ -217,7 +217,7 @@ sh get-docker.sh
 
 2. **استنساخ المشروع**
 ```bash
-git clone https://github.com/aymanbayoumi080-oss/Automation-Secretariat-Railways-System.g.git
+git clone https://github.com/aymank2020/Automation-Secretariat-Railways-System.git
 cd Automation-Secretariat-Railways-System
 ```
 
