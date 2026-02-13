@@ -1,6 +1,4 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
-from pathlib import Path
 
 
 class Settings(BaseSettings):
@@ -12,6 +10,5 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
-
 
 settings = Settings()

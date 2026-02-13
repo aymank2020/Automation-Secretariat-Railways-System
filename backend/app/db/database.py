@@ -9,7 +9,6 @@ if settings.DATABASE_URL.startswith("sqlite"):
 
 engine = create_engine(settings.DATABASE_URL, connect_args=connect_args)
 
-# Enable foreign keys for SQLite
 if settings.DATABASE_URL.startswith("sqlite"):
     @event.listens_for(engine, "connect")
     def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -32,4 +31,3 @@ def get_db():
 def init_db():
     from app import models
     Base.metadata.create_all(bind=engine)
-    print("Database tables created successfully!")
