@@ -7,17 +7,15 @@ from pathlib import Path
 import bcrypt
 
 # كلمة السر التي ستخزن في قاعدة البيانات
-password = "طويلة جدًا جدًا جدًا حتى تتجاوز الحد المسموح به في bcrypt"
+password = "Ak@123456*"
 
-# تقليص كلمة السر إلى 72 بايت
-password = password[:72]  # تقليص الكلمة لتكون 72 بايت كحد أقصى
+# تحويل كلمة السر إلى بايتات، ثم تقليصها إلى 72 بايت كحد أقصى
+password_bytes = password.encode('utf-8')[:72]  # تقليص كلمة السر بعد تحويلها إلى بايتات
 
 # الآن يمكنك تمرير الكلمة إلى bcrypt بعد التأكد من طولها
-hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+hashed_password = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
 
 # الآن قد يتم تخزين hashed_password في قاعدة البيانات
-
-
 
 # Add app to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -36,7 +34,8 @@ def seed_database():
             full_name="المدير العام",
             seclevel="admin"
         )
-        admin.set_password("admin123")
+        # استخدام hashed password مباشرة
+        admin.password = hashed_password
 
         # Create regular user
         user = User(
@@ -44,7 +43,8 @@ def seed_database():
             full_name="مستخدم عادي",
             seclevel="user"
         )
-        user.set_password("user123")
+        # تحويل كلمة المرور إلى بايتات ومن ثم تشفيرها
+        user.password = bcrypt.hashpw(b"user123"[:72], bcrypt.gensalt())
 
         # Add users
         db.add(admin)
