@@ -62,4 +62,4 @@ Thumbs.db
 # Application specific
 uploads/
 *.db
-*.sqlite3
+*.sqlite3railways_hr.db

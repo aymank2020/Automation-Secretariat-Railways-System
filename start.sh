@@ -1,58 +1,42 @@
 #!/bin/bash
-
-# Railway Correspondence Management System - Quick Start Script
-
-echo "🚂 نظام إدارة المراسلات - السكك الحديدية"
-echo "=============================================="
+echo "=== نظام إدارة المراسلات - السكك الحديدية ==="
 echo ""
 
-# Check if Docker is installed
-if ! command -v docker &> /dev/null; then
-    echo "❌ Docker غير مثبت. يرجى تثبيته أولاً"
-    echo "📖 تعليمات التثبيت: https://docs.docker.com/get-docker/"
-    exit 1
-fi
-
-# Check if Docker Compose is installed
-if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
-    echo "❌ Docker Compose غير مثبت"
-    exit 1
-fi
-
-echo "✅ Docker و Docker Compose جاهزان"
+# Backend
+echo "📦 Installing backend dependencies..."
+cd backend
+pip install -r requirements.txt
 echo ""
 
-# Check if .env exists
-if [ ! -f "backend/.env" ]; then
-    echo "📝 إنشاء ملف .env للباك إند..."
-    cp backend/.env.example backend/.env
-    echo "⚠️  يرجى تعديل backend/.env وإضافة SECRET_KEY جديد"
-fi
+echo "🗄️ Initializing database..."
+python seed_db.py
+echo ""
 
-# Start containers
-echo "🐳 تشغيل الحاويات..."
-docker-compose up -d
+echo "🚀 Starting backend on http://localhost:8000"
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload &
+BACKEND_PID=$!
+cd ..
 
-# Wait for database
-echo "⏳ انتظار قاعدة البيانات..."
-sleep 5
+# Frontend
+echo "📦 Installing frontend dependencies..."
+cd frontend
+npm install
+echo ""
 
-# Seed database
-echo "🌱 إنشاء قاعدة البيانات والبيانات الأولية..."
-docker-compose exec -T backend python seed_db.py
+echo "🚀 Starting frontend on http://localhost:5173"
+npx vite --host 0.0.0.0 --port 5173 &
+FRONTEND_PID=$!
+cd ..
 
 echo ""
-echo "✅ النظام جاهز للتشغيل!"
+echo "✅ System is running!"
+echo "   Frontend: http://localhost:5173"
+echo "   Backend:  http://localhost:8000"
+echo "   API Docs: http://localhost:8000/docs"
 echo ""
-echo "📍 الروابط:"
-echo "   - الفرونت إند: http://localhost:5173"
-echo "   - الباك إند:   http://localhost:8000"
-echo "   - API Docs:    http://localhost:8000/docs"
+echo "   Login: admin / admin123"
 echo ""
-echo "👤 بيانات الدخول:"
-echo "   - Admin: admin / admin123"
-echo "   - User:  user / user123"
-echo ""
-echo "📝 ملاحظة: يرجى تغيير كلمات المرور في بيئة الإنتاج!"
-echo ""
-echo "⏹️  لإيقاف النظام: docker-compose down"
+echo "Press Ctrl+C to stop..."
+
+trap "kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; exit" SIGINT SIGTERM
+wait
