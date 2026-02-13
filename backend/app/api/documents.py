@@ -18,7 +18,6 @@ router = APIRouter(prefix="/documents", tags=["Documents"])
 @router.post("/", response_model=DocumentResponse)
 def create_document(
     document: DocumentCreate,
-    file: Optional[UploadFile] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -32,35 +31,8 @@ def create_document(
             detail="رقم المستند موجود بالفعل"
         )
 
-    # Handle file upload
-    file_path = None
-    file_name = None
-    file_type = None
-
-    if file:
-        from app.core.config import settings
-        upload_dir = Path(settings.UPLOAD_DIR)
-        upload_dir.mkdir(parents=True, exist_ok=True)
-
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_name = f"{timestamp}_{file.filename}"
-        file_path = upload_dir / file_name
-        file_type = file.content_type
-
-        async def save_file():
-            async with aiofiles.open(file_path, 'wb') as f:
-                content = await file.read()
-                await f.write(content)
-
-        # Note: In async route, we'd await this
-        import asyncio
-        asyncio.run(save_file())
-
     new_doc = Document(
         **document.model_dump(),
-        file_path=str(file_path) if file_path else None,
-        file_name=file_name,
-        file_type=file_type,
         created_by=current_user.id
     )
 
@@ -219,13 +191,15 @@ def delete_document(
             detail="المستند غير موجود"
         )
 
+    # Delete history first
+    db.query(DocumentHistory).filter(DocumentHistory.document_id == doc_id).delete()
     db.delete(doc)
     db.commit()
 
     return {"message": "تم حذف المستند بنجاح"}
 
 
-@router.get("/{doc_id}/history", response_model=List)
+@router.get("/{doc_id}/history")
 def get_document_history(
     doc_id: int,
     db: Session = Depends(get_db),
