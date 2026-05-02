@@ -3,22 +3,21 @@ import { useAuthStore } from '@/stores/auth'
 
 const routes = [
   {
-    path: '/',
-    redirect: '/dashboard'
-  },
-  {
     path: '/login',
     name: 'login',
     component: () => import('@/pages/Login.vue'),
     meta: { guest: true }
   },
   {
-    path: '/dashboard',
-    name: 'dashboard',
+    path: '/',
     component: () => import('@/layouts/MainLayout.vue'),
     children: [
       {
         path: '',
+        redirect: '/dashboard'
+      },
+      {
+        path: 'dashboard',
         name: 'home',
         component: () => import('@/pages/Dashboard.vue')
       },
@@ -49,6 +48,10 @@ const routes = [
         meta: { requiresAdmin: true }
       }
     ]
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/dashboard'
   }
 ]
 

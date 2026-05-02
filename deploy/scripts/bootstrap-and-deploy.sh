@@ -16,6 +16,10 @@ REPO_URL="${REPO_URL:-https://github.com/aymank2020/Automation-Secretariat-Railw
 APP_USER="${APP_USER:-railways}"
 APP_DIR="${APP_DIR:-/opt/railways-secretariat}"
 BRANCH="${BRANCH:-main}"
+# CIDR(s) allowed to reach the app on port 80, comma-separated.
+# Default covers RFC1918 private ranges so any LAN can reach it,
+# while UFW still blocks the public internet.
+LAN_CIDRS="${LAN_CIDRS:-10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}"
 
 if [[ $EUID -ne 0 ]]; then
     echo "[!] This script must be run as root (use sudo)." >&2
@@ -71,13 +75,23 @@ fi
 usermod -aG docker "$APP_USER"
 
 # ----------------------------------------------------------------------------
-log "Configuring UFW firewall (only SSH inbound; Cloudflare Tunnel is outbound)"
+log "Configuring UFW firewall (SSH + LAN-only HTTP; Cloudflare Tunnel is outbound)"
 if ! ufw status | grep -q "Status: active"; then
     ufw default deny incoming
     ufw default allow outgoing
     ufw allow 22/tcp comment "ssh"
     ufw --force enable
 fi
+
+# Make sure the LAN ranges have access to port 80 (idempotent).
+IFS=',' read -ra _CIDRS <<<"$LAN_CIDRS"
+for cidr in "${_CIDRS[@]}"; do
+    cidr="$(echo "$cidr" | tr -d ' ')"
+    [[ -z "$cidr" ]] && continue
+    if ! ufw status | grep -q "80/tcp.*$cidr"; then
+        ufw allow from "$cidr" to any port 80 proto tcp comment "lan-http"
+    fi
+done
 
 # ----------------------------------------------------------------------------
 log "Enabling fail2ban for sshd"
@@ -157,19 +171,20 @@ sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && docker compose -f docker-compos
 sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && docker compose -f docker-compose.prod.yml up -d --build"
 
 # ----------------------------------------------------------------------------
-log "Waiting for backend health"
+log "Waiting for stack health"
+LAN_IP="$(ip -4 -o addr show scope global | awk '{print $4}' | cut -d/ -f1 | head -n1 || true)"
 for _ in $(seq 1 30); do
-    if curl --fail --silent --max-time 2 http://127.0.0.1:8080/healthz >/dev/null; then
+    if curl --fail --silent --max-time 2 http://127.0.0.1/healthz >/dev/null; then
         echo "[+] Frontend nginx is healthy."
         break
     fi
     sleep 2
 done
 
-if curl --fail --silent --max-time 2 http://127.0.0.1:8080/api/health >/dev/null; then
+if curl --fail --silent --max-time 2 http://127.0.0.1/api/health >/dev/null; then
     echo "[+] Backend API reachable through frontend nginx."
 else
-    echo "[!] Backend not reachable yet via http://127.0.0.1:8080/api/health"
+    echo "[!] Backend not reachable yet via http://127.0.0.1/api/health"
     echo "    Run: sudo -u $APP_USER docker compose -f $APP_DIR/docker-compose.prod.yml logs backend"
 fi
 
@@ -178,8 +193,14 @@ cat <<EOF
 ============================================================================
 Deployment complete.
 
-Local URL on the server itself:    http://127.0.0.1:8080
-Cloudflare hostname (via tunnel):  http://railways-secretariat   (WARP only)
+From the LAN (any device on the same network as this server):
+  http://${LAN_IP:-<server-lan-ip>}
+
+From outside the LAN (laptop on home Wi-Fi etc.):
+  Install Cloudflare WARP, sign in to your Zero Trust team, then visit
+  the same URL. WARP routes traffic through the secretariat tunnel.
+  (Add a Private Network rule with CIDR ${LAN_IP:-<server-lan-ip>}/32 on
+  the secretariat tunnel for this to work.)
 
 Useful commands (run as the '$APP_USER' user or via sudo):
   cd $APP_DIR
