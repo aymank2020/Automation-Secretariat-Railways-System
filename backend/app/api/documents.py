@@ -1,13 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import or_
-from typing import List, Optional
-from datetime import datetime
+from sqlalchemy.orm import Session
 
+from app.api.dependencies import get_current_admin, get_current_user
 from app.db.database import get_db
 from app.models import Document, DocumentHistory, User
-from app.schemas import DocumentCreate, DocumentUpdate, DocumentResponse
-from app.api.dependencies import get_current_user, get_current_admin
+from app.schemas import DocumentCreate, DocumentResponse, DocumentUpdate
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -25,16 +23,16 @@ def create_document(document: DocumentCreate, db: Session = Depends(get_db), cur
     return DocumentResponse.model_validate(new_doc)
 
 
-@router.get("/", response_model=List[DocumentResponse])
-def list_documents(doc_type: Optional[str] = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+@router.get("/", response_model=list[DocumentResponse])
+def list_documents(doc_type: str | None = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     q = db.query(Document)
     if doc_type:
         q = q.filter(Document.doc_type == doc_type)
     return q.order_by(Document.created_at.desc()).offset(skip).limit(limit).all()
 
 
-@router.get("/search", response_model=List[DocumentResponse])
-def search_documents(doc_type: Optional[str] = None, search_term: Optional[str] = None, priority: Optional[str] = None, doc_status: Optional[str] = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+@router.get("/search", response_model=list[DocumentResponse])
+def search_documents(doc_type: str | None = None, search_term: str | None = None, priority: str | None = None, doc_status: str | None = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     q = db.query(Document)
     if doc_type:
         q = q.filter(Document.doc_type == doc_type)

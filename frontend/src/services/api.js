@@ -1,6 +1,9 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+// Default to a same-origin '/api' base so a single reverse proxy (nginx,
+// Cloudflare Tunnel, etc.) can serve both the SPA and the API. Override
+// with VITE_API_URL only for local dev that talks to a separate backend.
+const API_URL = import.meta.env.VITE_API_URL || '/api'
 
 const api = axios.create({
   baseURL: API_URL,

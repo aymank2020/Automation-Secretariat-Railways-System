@@ -48,11 +48,6 @@
         </button>
       </form>
 
-      <div class="mt-6 text-center text-sm text-gray-500">
-        <p>بيانات الدخول الافتراضية:</p>
-        <p class="mt-1"><strong>مدير:</strong> admin / admin123</p>
-        <p><strong>مستخدم:</strong> user / user123</p>
-      </div>
     </div>
   </div>
 </template>

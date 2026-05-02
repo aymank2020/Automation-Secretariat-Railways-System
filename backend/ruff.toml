@@ -1,0 +1,11 @@
+line-length = 120
+target-version = "py312"
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+# B008 is the standard FastAPI Depends(...) pattern, not a real bug.
+ignore = ["E501", "B008"]
+
+[lint.per-file-ignores]
+"tests/*" = ["B", "E402"]
+"alembic/*" = ["E402"]

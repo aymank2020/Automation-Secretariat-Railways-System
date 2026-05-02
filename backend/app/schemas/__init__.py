@@ -1,6 +1,6 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime
+
+from pydantic import BaseModel
 
 
 class UserLogin(BaseModel):
@@ -10,13 +10,13 @@ class UserLogin(BaseModel):
 class UserCreate(BaseModel):
     username: str
     password: str
-    full_name: Optional[str] = None
+    full_name: str | None = None
     seclevel: str = "user"
 
 class UserResponse(BaseModel):
     id: int
     username: str
-    full_name: Optional[str] = None
+    full_name: str | None = None
     seclevel: str
     created_at: datetime
     is_active: bool
@@ -32,38 +32,38 @@ class DocumentCreate(BaseModel):
     doc_type: str
     doc_number: str
     subject: str
-    source: Optional[str] = None
-    destination: Optional[str] = None
+    source: str | None = None
+    destination: str | None = None
     date: datetime
-    content: Optional[str] = None
+    content: str | None = None
     priority: str = "normal"
-    notes: Optional[str] = None
+    notes: str | None = None
 
 class DocumentUpdate(BaseModel):
-    subject: Optional[str] = None
-    source: Optional[str] = None
-    destination: Optional[str] = None
-    content: Optional[str] = None
-    status: Optional[str] = None
-    priority: Optional[str] = None
-    notes: Optional[str] = None
+    subject: str | None = None
+    source: str | None = None
+    destination: str | None = None
+    content: str | None = None
+    status: str | None = None
+    priority: str | None = None
+    notes: str | None = None
 
 class DocumentResponse(BaseModel):
     id: int
     doc_type: str
     doc_number: str
     subject: str
-    source: Optional[str] = None
-    destination: Optional[str] = None
+    source: str | None = None
+    destination: str | None = None
     date: datetime
-    content: Optional[str] = None
+    content: str | None = None
     priority: str
-    notes: Optional[str] = None
-    file_name: Optional[str] = None
-    file_type: Optional[str] = None
+    notes: str | None = None
+    file_name: str | None = None
+    file_type: str | None = None
     status: str
     created_by: int
     created_at: datetime
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
     class Config:
         from_attributes = True
