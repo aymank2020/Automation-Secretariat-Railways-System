@@ -53,8 +53,13 @@ services:
         condition: service_started
     networks: [internal]
     ports:
-      # Bind to localhost only - cloudflared talks to it via the host's loopback.
-      - "127.0.0.1:8080:80"
+      # Bind on the host's LAN interface so:
+      #   * users on the same LAN can browse to http://<server-ip>
+      #   * cloudflared (running on the host's docker network) reaches it
+      #   * remote staff can reach the same URL once Cloudflare WARP routes
+      #     the server's LAN IP through the secretariat tunnel.
+      # UFW restricts who can actually reach this port from outside the host.
+      - "80:80"
 
   cloudflared:
     image: cloudflare/cloudflared:latest
