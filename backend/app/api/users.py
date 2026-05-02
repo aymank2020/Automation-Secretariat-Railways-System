@@ -1,16 +1,17 @@
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
-from app.db.database import get_db
-from app.models import User
-from app.schemas import UserResponse, UserCreate
+
 from app.api.dependencies import get_current_admin
 from app.core.security import hash_password
+from app.db.database import get_db
+from app.models import User
+from app.schemas import UserCreate, UserResponse
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get("/", response_model=List[UserResponse])
+@router.get("/", response_model=list[UserResponse])
 def list_users(db: Session = Depends(get_db), admin: User = Depends(get_current_admin)):
     return db.query(User).all()
 
