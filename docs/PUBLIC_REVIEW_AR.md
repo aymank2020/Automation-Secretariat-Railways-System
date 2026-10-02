@@ -11,8 +11,8 @@
 
 ## نتائج موثقة
 
-- P1: sub المفقود أو غير الرقمي تحول إلى int خارج معالجة الأخطاء فيرجع500؛ الآن401. المستخدم المعطل كان مقبولًا برمز قديم؛ الآن مرفوض: [backend/app/api/dependencies.py:17](../backend/app/api/dependencies.py#L17).
-- P2: skip/limit سمحا بقيم سالبة أو غير محدودة؛ أضيف skip≥0 وlimit1..500: [backend/app/api/documents.py:27](../backend/app/api/documents.py#L27).
+- P1: sub المفقود أو غير الرقمي تحول إلى int خارج معالجة الأخطاء فيرجع500؛ الآن401. المستخدم المعطل كان مقبولًا برمز قديم؛ الآن مرفوض: [backend/app/api/dependencies.py:17](E:/1dollar/github-public-review/repos/Automation-Secretariat-Railways-System/backend/app/api/dependencies.py:17).
+- P2: skip/limit سمحا بقيم سالبة أو غير محدودة؛ أضيف skip≥0 وlimit1..500: [backend/app/api/documents.py:27](E:/1dollar/github-public-review/repos/Automation-Secretariat-Railways-System/backend/app/api/documents.py:27).
 - P2: history لمستند غير موجود رجع قائمة صامتة؛ الآن404 وترتيب ثابت.
 
 ## خطة التغيير المنفذة
@@ -29,7 +29,7 @@
 
 طُبقت مهارة Integration & Impact Review بعد مراجعة المصدر والاختبارات والفروق النهائية.
 
-واجهة frontend/src/services/api.js ترسل Authorization وتستهلك /documents/ و/history → routers المسجلة في app.main → get_current_user → استعلام مع حدود/404. المستهلك الفعلي: [frontend/src/services/api.js:52](../frontend/src/services/api.js#L52). الاختبارات تدخل المسارات HTTP الحقيقية وقاعدة fixture؛ لا تستبدل auth dependency. build يثبت wiring واجهة قابلًا للبناء، لا جلسة متصفح مكتملة.
+واجهة frontend/src/services/api.js ترسل Authorization وتستهلك /documents/ و/history → routers المسجلة في app.main → get_current_user → استعلام مع حدود/404. المستهلك الفعلي: [frontend/src/services/api.js:52](E:/1dollar/github-public-review/repos/Automation-Secretariat-Railways-System/frontend/src/services/api.js:52). الاختبارات تدخل المسارات HTTP الحقيقية وقاعدة fixture؛ لا تستبدل auth dependency. build يثبت wiring واجهة قابلًا للبناء، لا جلسة متصفح مكتملة.
 
 ## أولويات المتابعة والفجوات غير المنفذة
 
@@ -43,3 +43,5 @@
 - [FastAPI numeric validation](https://fastapi.tiangolo.com/tutorial/path-params-numeric-validations/): ge/le تعيد أخطاء validation عبر HTTP.
 
 تستند نتائج الأعطال والإصلاح إلى ملفات هذا المستودع والاختبارات المحلية؛ توثيق المورد يشرح سبب اختيار التصميم ولا يثبت نجاح النشر.
+
+متابعةCI: رُصدتB904 واحدة فيرفعHTTP401داخلexcept؛ أُضيفfromNoneلفصلالاستثناءداخليًا معبقاءاستجابة401نفسها. لمتعطلالبوابة. إعادةفحصHTTPباستخدامقاعدةSQLiteخاصةعلىD، والمستهلكنفسget_current_userالمسجل.

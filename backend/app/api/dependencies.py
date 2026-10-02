@@ -16,7 +16,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     try:
         user_id = int(payload.get("sub"))
     except (TypeError, ValueError, OverflowError):
-        raise HTTPException(status_code=401, detail="Token غير صالح")
+        raise HTTPException(status_code=401, detail="Token غير صالح") from None
     if user_id <= 0:
         raise HTTPException(status_code=401, detail="Token غير صالح")
     user = db.query(User).filter(User.id == user_id).first()
