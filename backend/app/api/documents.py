@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -24,7 +24,7 @@ def create_document(document: DocumentCreate, db: Session = Depends(get_db), cur
 
 
 @router.get("/", response_model=list[DocumentResponse])
-def list_documents(doc_type: str | None = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def list_documents(doc_type: str | None = None, skip: int = Query(0, ge=0), limit: int = Query(100, ge=1, le=500), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     q = db.query(Document)
     if doc_type:
         q = q.filter(Document.doc_type == doc_type)
@@ -82,4 +82,6 @@ def delete_document(doc_id: int, db: Session = Depends(get_db), current_user: Us
 
 @router.get("/{doc_id}/history")
 def get_document_history(doc_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return db.query(DocumentHistory).filter(DocumentHistory.document_id == doc_id).all()
+    if not db.query(Document).filter(Document.id == doc_id).first():
+        raise HTTPException(status_code=404, detail="المستند غير موجود")
+    return db.query(DocumentHistory).filter(DocumentHistory.document_id == doc_id).order_by(DocumentHistory.id).all()
