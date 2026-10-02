@@ -13,8 +13,14 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     payload = decode_access_token(credentials.credentials)
     if not payload:
         raise HTTPException(status_code=401, detail="Token غير صالح")
-    user = db.query(User).filter(User.id == int(payload.get("sub"))).first()
-    if not user:
+    try:
+        user_id = int(payload.get("sub"))
+    except (TypeError, ValueError, OverflowError):
+        raise HTTPException(status_code=401, detail="Token غير صالح")
+    if user_id <= 0:
+        raise HTTPException(status_code=401, detail="Token غير صالح")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user or not user.is_active:
         raise HTTPException(status_code=401, detail="المستخدم غير موجود")
     return user
 
